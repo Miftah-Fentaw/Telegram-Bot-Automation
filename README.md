@@ -50,7 +50,7 @@
    Create a `.env` file in the root directory:
    ```env
    BOT_TOKEN=your_telegram_bot_token
-   CHANNEL_ID=your_telegram_channel_id
+   CHANNEL_ID=your_telegram_channel_id  it must be using @ not https:// example @username
    ```
 
 ### Running the Bot
