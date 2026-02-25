@@ -87,11 +87,12 @@ def rewrite_with_ai(title, content, link):
         "\n\nRules:\n"
         "1. ONLY process content related to: Mobile/Web development, Programming, Android, Flutter, Kotlin, or Cybersecurity.\n"
         "2. If the topic is non-technical (e.g., general business, politics, non-dev news), return the string 'REJECT'.\n"
-        "3. Start with a relevant emoji and a **Bold Title**.\n"
+        "3. Start with a relevant emoji and a *Bold Title*.\n"
         "4. Provide a concise summary in 2-3 bullet points.\n"
         "5. Tone: professional, direct, developer-focused. No marketing fluff.\n"
         "6. Mandatory hashtags at the very bottom: #Programming #TechNews #DevLife #ManceTech\n"
-        "7. Source link at the end."
+        "7. Source link at the end.\n"
+        "8. Use ONLY single asterisks (*) for bold text. DO NOT use HTML tags, double asterisks (**), underscores (_), or backticks (`)."
     )
     
     messages = [
@@ -124,6 +125,13 @@ def rewrite_with_ai(title, content, link):
             print(f"AI rejected non-technical content: {title}")
             return None
             
+        # Clean up output to prevent markdown parsing errors in Telegram
+        output = output.replace('**', '*')  # Use single asterisk for bold
+        output = output.replace('_', '')     # Remove underscores
+        output = output.replace('`', '')     # Remove backticks
+        output = output.replace('<font', '').replace('</font>', '') # Remove font tags if any
+        output = output.replace('<b>', '*').replace('</b>', '*')  # Convert any b tags to asterisk
+            
         return output
     except Exception as e:
         print("AI Process error:", e)
@@ -140,7 +148,12 @@ def send_to_telegram(message):
     }
     r = requests.post(url, data=data)
     if r.status_code != 200:
-        print("Telegram error:", r.text)
+        print("Telegram error (Markdown mode):", r.text)
+        print("Retrying as plain text...")
+        del data["parse_mode"]
+        r = requests.post(url, data=data)
+        if r.status_code != 200:
+            print("Telegram error (Plain text mode):", r.text)
 
 # -------- MAIN LOOP -------- #
 def run():
